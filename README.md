@@ -1,0 +1,2 @@
+# Winkle
+'vendor app only'
