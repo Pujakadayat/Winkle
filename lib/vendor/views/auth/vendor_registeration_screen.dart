@@ -243,11 +243,15 @@
 // // extension on FirebaseAuth {
 // //   pickProfileImage(ImageSource gallery) {}
 // // }
+
+
+
 import 'dart:typed_data';
 import 'package:country_state_city_picker/country_state_city_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vendor_app_only/vendor/controllers/vendor_register_controller.dart';
 
@@ -270,13 +274,18 @@ class _VendorRegisterationScreenState extends State<VendorRegisterationScreen> {
   late String businessName;
   late String email;
   late String phoneNumber;
+  // late String taxNumber;
+  late String taxNumber = ''; // or provide another sensible default
+
+
+
   Uint8List? _image;
   String? _taxStatus;
   List<String> _taxOptions = ['YES', 'NO'];
 
   // Method for selecting image from the gallery
   selectGalleryImage() async {
-    Uint8List im = await _vendorController.pickStoreImage(ImageSource.gallery);
+    Uint8List? im = await _vendorController.pickStoreImage(ImageSource.gallery);
     setState(() {
       _image = im;
     });
@@ -284,7 +293,7 @@ class _VendorRegisterationScreenState extends State<VendorRegisterationScreen> {
 
   // Method for selecting image from the camera
   selectCameraImage() async {
-    Uint8List im = await _vendorController.pickStoreImage(ImageSource.camera);
+    Uint8List? im = await _vendorController.pickStoreImage(ImageSource.camera);
     setState(() {
       _image = im;
     });
@@ -302,6 +311,57 @@ class _VendorRegisterationScreenState extends State<VendorRegisterationScreen> {
       // Show success message or navigate to another screen
     }
   }
+
+// _savebVendorDetail() async{
+// EasyLoading.show(status:"PLEASE WAIT");
+
+//   if(_formKey.currentState!.validate()){
+//  await _vendorController.registerVendor(
+//   businessName,
+//    email, phoneNumber, countryValue, stateValue, cityValue, _taxStatus!, taxNumber, _image).whenComplete((){
+//     EasyLoading.dismiss();
+
+//     setState(() {
+      
+//       _formKey.currentState!.reset();
+
+//       _image = null;
+//     });
+//    });
+//   }else{
+//     print("Bad");
+
+//      EasyLoading.dismiss();
+//   }
+// }
+_saveVendorDetail() async {
+  EasyLoading.show(status: "PLEASE WAIT");
+
+  if (_formKey.currentState!.validate()) {
+    await _vendorController.registerVendor(
+      businessName: businessName,
+      email: email,
+      phoneNumber: phoneNumber,
+      country: countryValue,
+      state: stateValue,
+      city: cityValue,
+      taxStatus: _taxStatus!,
+      taxNumber: taxNumber,
+      image: _image,
+    ).whenComplete(() {
+      EasyLoading.dismiss();
+
+      setState(() {
+        _formKey.currentState!.reset();
+        _image = null;
+      });
+    });
+  } else {
+    print("Bad");
+    EasyLoading.dismiss();
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -343,165 +403,154 @@ class _VendorRegisterationScreenState extends State<VendorRegisterationScreen> {
               );
             }),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      "Vendor Registration",
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Business Name',
-                        border: OutlineInputBorder(),
+          Form(
+            child: SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        "Vendor Registration",
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
                       ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter your business name';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        businessName = value;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Email Address',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        email = value;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Phone Number',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter your phone number';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        phoneNumber = value;
-                      },
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(14.0),
-                      child: SelectState(
-                        onCountryChanged: (value) {
-                          setState(() {
-                            countryValue = value;
-                          });
+                      SizedBox(height: 20),
+                      TextFormField(
+                        // validator:(value) {
+                        //   if(value!.isEmpty){
+                        //     return "please Business Name must not be empty";
+                        //   }else{
+                        //     return null;
+                        //   }
+                        // },
+                     
+                        decoration: InputDecoration(
+                          labelText: 'Business Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your business name';
+                          }
+                          return null;
                         },
-                        onStateChanged: (value) {
-                          setState(() {
-                            stateValue = value;
-                          });
-                        },
-                        onCityChanged: (value) {
-                          setState(() {
-                            cityValue = value;
-                          });
+                        onChanged: (value) {
+                          businessName = value;
                         },
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Tax Registered?",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Flexible(
-                            child: Container(
-                              width:100,
-                              child: DropdownButtonFormField(
-                                hint:Text("Select"),
-                                items: _taxOptions
-                                    .map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                      value: value, child: Text(value));
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _taxStatus = value;
-                                  });
-                                },
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Email Address',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          email = value;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Phone Number',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your phone number';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          phoneNumber = value;
+                        },
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: SelectState(
+                          onCountryChanged: (value) {
+                            setState(() {
+                              countryValue = value;
+                            });
+                          },
+                          onStateChanged: (value) {
+                            setState(() {
+                              stateValue = value;
+                            });
+                          },
+                          onCityChanged: (value) {
+                            setState(() {
+                              cityValue = value;
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Tax Registered?",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // SizedBox(height: 20),
-                    // ElevatedButton(
-                    //   onPressed: _registerVendor,
-                    //   child: Text("Register Vendor"),
-                    // ),
-
-                    if(_taxStatus == 'YES')
-
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: TextFormField(decoration: InputDecoration(
-                        labelText: 'Tax Number',
-                      ),
-                      ),
-                    ),
-
-
-                    InkWell(
-                      onTap: (){},
-                      child: Container(
-                        height: 30,
-                        width:MediaQuery.of(context).size.width -40,
-                        decoration: BoxDecoration(color:Colors.yellow.shade900,
-                        borderRadius:BorderRadius.circular(10), 
+                            SizedBox(width: 10),
+                            Flexible(
+                              child: Container(
+                                width:100,
+                                child: DropdownButtonFormField(
+                                  hint:Text("Select"),
+                                  items: _taxOptions
+                                      .map<DropdownMenuItem<String>>((String value) {
+                                    return DropdownMenuItem<String>(
+                                        value: value, child: Text(value));
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _taxStatus = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        child: Center(child: Text('Save',
-                        style: TextStyle(
-                      
-                          fontSize: 18,
-                          color:Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        ),),
-                                      
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+                      // SizedBox(height: 20),
+                      // ElevatedButton(
+                      //   onPressed: _registerVendor,
+                      //   child: Text("Register Vendor"),
+                      // ),
+            
+                      if(_taxStatus == 'YES')
+            
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: TextFormField(decoration: InputDecoration(
+                          labelText: 'Tax Number',
+                        ),
+                        ),
+                      ),
+            
+            
+                      InkWell(
+                        onTap: (){
+_saveVendorDetail();
+                        },
+                        child: Container(
+                          height: 30,
+                          width:MediaQuery.of(context).size.width -40,
+                          decoration: BoxDecoration(color:Colors.yellow.shade900,
+   
